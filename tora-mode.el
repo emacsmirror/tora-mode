@@ -75,6 +75,9 @@
 (defvar tora-string-regexp
   "\"\\([^\\]\\|\\\\.\\)*?\"\\|'\\([^\\]\\|\\\\.\\)*?'")
 
+(defvar tora-storage-regexp
+  "my" "local")
+
 (defvar tora-this-regexp
   "this")
 
@@ -103,7 +106,7 @@
 ;; Tora keywords
 (defvar tora-keywords
   '("class" "for" "new" "sub" "if" "elisf" "else" "next" "last" "return"
-    "initialize" "while" "static" "alias"))
+    "initialize" "while" "static" "alias" "use" "unless"))
 
 (defvar tora-keywords-regexp
   (regexp-opt (append tora-keywords)))
@@ -113,6 +116,7 @@
     (,tora-string-regexp . font-lock-string-face)
     (,tora-this-regexp . font-lock-variable-name-face)
 ;    (,tora-regexp-regexp . font-lock-constant-face)
+    (,tora-storage-regexp . font-lock-keyword-face)
     (,tora-label-regexp . font-lock-keyword-face)
     (,tora-arrow-regexp . font-lock-keyword-face)
     (,tora-boolean-regexp . font-lock-constant-face)
@@ -147,6 +151,6 @@
 (provide 'tora-mode)
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.tora" . tora-mode))
+(add-to-list 'auto-mode-alist '("\\.tra" . tora-mode))
 
 ;;; tora-mode.el ends here
