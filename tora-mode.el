@@ -28,7 +28,7 @@
   "Tora major mode"
   :group 'languages)
 
-(defcustom tora-tab-width 4
+(defcustom tora-tab-width tab-width
   "The tab width to use when indenting"
   :type 'integer
   :group 'tora)
@@ -59,7 +59,7 @@
         ;; We're too far, remove all indentation.
         (when (> (- (current-indentation) prev-indent) tora-tab-width)
           (backward-to-indentation 0)
-          (delete-region (point-at-bol) (point))))))  )
+          (delete-region (point-at-bol) (point)))))))
 
 (defun tora-previous-indent ()
   "Return the indentation level of the previous non-blank line."
@@ -98,7 +98,7 @@
 
 ;; Label Regexp
 (defvar tora-label-regexp
-  "\\<[a-zA-Z_][a-zA-Z_0-9]+:")
+  "^\\<[a-zA-Z_][a-zA-Z_0-9]+:")
 
 (defvar tora-arrow-regexp
   "->")
@@ -109,7 +109,7 @@
     "initialize" "while" "static" "alias" "use" "unless"))
 
 (defvar tora-keywords-regexp
-  (regexp-opt (append tora-keywords)))
+  (regexp-opt (append tora-keywords) 'words))
 
 (defvar tora-font-lock-keywords
   `(
@@ -125,6 +125,12 @@
 (defvar tora-mode-hook nil
   "A hook for you to run your own code when the mode is loaded")
 
+(defconst tora-syntax-propertize-function
+  (syntax-propertize-rules
+   ("__\\(DATA\\|END\\)__\\(\r?\n\\|.\\)+\\(\\'\\)"
+    (1 "<")
+    (3 ">"))))
+
 (define-derived-mode tora-mode fundamental-mode
   "Tora"
   "Major mode for editing Tora"
@@ -139,6 +145,10 @@
   (modify-syntax-entry ?\n "> b" tora-mode-syntax-table)
   (make-local-variable 'comment-start)
   (setq comment-start "#")
+
+  ;; __DATA__, __END__
+  (set (make-local-variable 'syntax-propertize-function)
+       tora-syntax-propertize-function)
 
   ;; indentation
   (make-local-variable 'indent-line-function)
