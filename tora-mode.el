@@ -103,6 +103,30 @@
 (defvar tora-arrow-regexp
   "->")
 
+;;; declaration
+(defconst tora-identifier-regexp
+  "$?[a-zA-Z_][a-zA-Z0-9_:]*")
+
+;; class declaration
+(defconst tora-class-definition-regexp
+  (concat
+   "\\<class\\s-+\\(" tora-identifier-regexp "\\)"))
+
+;; variable declaration
+(defconst tora-variable-definition-regexp
+  (concat
+   "\\<my\\s-+\\(" tora-identifier-regexp "\\)"))
+
+;; function declaration
+(defconst tora-function-definition-regexp
+  (concat
+   "\\<sub\\s-+\\(" tora-identifier-regexp "\\)"))
+
+;;
+(defconst tora-import-module-regexp
+  (concat
+   "\\<use \\(" tora-identifier-regexp "\\)"))
+
 ;; Tora keywords
 (defvar tora-keywords
   '("class" "for" "new" "sub" "if" "elisf" "else" "next" "last" "return"
@@ -115,6 +139,14 @@
   `(
     (,tora-string-regexp . font-lock-string-face)
     (,tora-this-regexp . font-lock-variable-name-face)
+    (,tora-class-definition-regexp
+     (1 font-lock-type-face))
+    (,tora-variable-definition-regexp
+     (1 font-lock-variable-name-face))
+    (,tora-function-definition-regexp
+     (1 font-lock-function-name-face))
+    (,tora-import-module-regexp
+     (1 font-lock-function-name-face))
 ;    (,tora-regexp-regexp . font-lock-constant-face)
     (,tora-storage-regexp . font-lock-keyword-face)
     (,tora-label-regexp . font-lock-keyword-face)
