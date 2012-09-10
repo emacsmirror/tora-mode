@@ -163,6 +163,7 @@
     (1 "<")
     (3 ">"))))
 
+;;;###autoload
 (define-derived-mode tora-mode fundamental-mode
   "Tora"
   "Major mode for editing Tora"
@@ -188,7 +189,6 @@
   (set (make-local-variable 'tab-width) tora-tab-width)
 
   (run-hooks 'tora-mode-hook))
-
 
 (provide 'tora-mode)
 
