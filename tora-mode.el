@@ -164,6 +164,12 @@
     (1 "<")
     (3 ">"))))
 
+;; imenu
+(defvar tora-imenu-generic-expression
+  '((nil "^\\s-*class\\s-+\\([a-zA-Z0-9_:]+\\)" 1)
+    (nil "^\\s-*sub\\s-+\\([a-zA-Z0-9_:]+\\)" 1))
+  "Tora imenu regexp")
+
 ;;;###autoload
 (define-derived-mode tora-mode fundamental-mode
   "Tora"
@@ -188,6 +194,10 @@
   (make-local-variable 'indent-line-function)
   (setq indent-line-function 'tora-indent-line)
   (set (make-local-variable 'tab-width) tora-tab-width)
+
+  ;; imenu
+  (set (make-local-variable 'imenu-generic-expression)
+       tora-imenu-generic-expression)
 
   (run-hooks 'tora-mode-hook))
 
