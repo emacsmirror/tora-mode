@@ -23,6 +23,7 @@
 ;;; Code:
 
 (require 'font-lock)
+(require 'comint)
 
 (defgroup tora nil
   "Tora major mode"
@@ -189,6 +190,81 @@
   (set (make-local-variable 'tab-width) tora-tab-width)
 
   (run-hooks 'tora-mode-hook))
+
+;;
+;; REPL
+;;
+
+(defvar tora-program-name "tora")
+(defvar inf-tora-buffer nil)
+
+(defun tora-send-region (start end)
+  "Send the current region to the inferior Tora process."
+  (interactive "r")
+  (let* ((str (buffer-substring-no-properties start end))
+         (ignore-newline (replace-regexp-in-string "[\r\n]" "" str))
+         (proc (tora-proc)))
+    (comint-send-string proc ignore-newline)
+    (comint-send-string proc "\n")))
+
+(when (require 'ansi-color nil t)
+ (autoload 'ansi-color-for-comint-mode-on "ansi-color" nil t)
+ (add-hook 'inferior-tora-mode-hook 'ansi-color-for-comint-mode-on))
+
+(defvar inferior-tora-mode-map (make-sparse-keymap)
+  "tora interactive mode map")
+
+;; Install the process communication commands in the tora-mode keymap.
+(define-key tora-mode-map (kbd "C-c C-r") 'tora-send-region)
+
+(define-derived-mode inferior-tora-mode comint-mode "Inferior Tora"
+  ;; Customize in inferior-tora-mode-hook
+  (setq comint-prompt-regexp "^>>")
+  (setq mode-line-process '(": %s"))
+  (setq comint-input-filter (function tora-input-filter)))
+
+(defcustom inferior-tora-filter-regexp "\\`\\s *\\S ?\\S ?\\s *\\'"
+  "Input matching this regexp are not saved on the history list.
+Defaults to a regexp ignoring all inputs of 0, 1, or 2 letters."
+  :type 'regexp
+  :group 'inf-tora)
+
+(defun tora-input-filter (str)
+  "Don't save anything matching `inferior-tora-filter-regexp'."
+  (not (string-match inferior-tora-filter-regexp str)))
+
+(defun tora-proc ()
+  (unless (and inf-tora-buffer
+               (get-buffer inf-tora-buffer)
+               (comint-check-proc inf-tora-buffer))
+    (tora-interactively-start-process))
+  (or (tora-get-process)
+      (error "No current process.  See variable `inf-tora-buffer'")))
+
+(defun tora-get-process ()
+  "Return the current Tora process or nil if none is running."
+  (get-buffer-process (if (eq major-mode 'inferior-tora-mode)
+                          (current-buffer)
+                        inf-tora-buffer)))
+
+(defun tora-interactively-start-process (&optional cmd)
+  "Start an inferior tora process.  Return the process started.
+Since this command is run implicitly, always ask the user for the
+command to run."
+  (save-window-excursion
+    (run-tora (read-string "Run Tora: " tora-program-name))))
+
+(defun run-tora (cmd)
+  (interactive (list (if current-prefix-arg
+                         (read-string "Run tora: " tora-program-name)
+                       tora-program-name)))
+  (if (not (comint-check-proc "*tora*"))
+      (let ((cmdlist (split-string-and-unquote cmd)))
+        (set-buffer (apply 'make-comint "tora" (car cmdlist)
+                           nil (cdr cmdlist)))
+        (inferior-tora-mode)))
+  (setq tora-program-name cmd)
+  (pop-to-buffer (setq inf-tora-buffer "*tora*")))
 
 (provide 'tora-mode)
 
